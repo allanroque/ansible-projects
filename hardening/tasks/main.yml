@@ -1,0 +1,138 @@
+---
+- name: Cria usuário devops
+  user:
+    name: "{{ devops_user }}"
+    password: "{{ devops_password | password_hash('sha512') }}"
+    createhome: yes
+  tags: 
+    - user
+
+- name: Adiciona regra de sudo para o usuário devops em arquivo separado
+  lineinfile:
+    path: /etc/sudoers.d/devops
+    line: "{{ devops_user }} ALL=(ALL)	ALL"
+    validate: 'visudo -cf %s'
+    state: present
+    create: yes
+    backup: yes
+  tags: 
+    - sudo
+
+- name: Copiar arquivo de motd para o host
+  template:
+    src: templates/motd.j2
+    dest: /etc/motd
+    mode: '0644'
+  tags: 
+    - motd
+
+- name: Ativar serviços importantes
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: "{{ services_to_enable }}"
+  tags: 
+    - service
+
+- name: Desativar serviços desnecessários
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop: "{{ services_to_disable }}"
+  ignore_errors: true
+  tags: 
+    - service
+
+- name: Configurar o SELinux
+  ansible.posix.selinux:
+    policy: "{{ os_selinux_policy }}"
+    state: "{{ os_selinux_state }}"
+  tags: 
+    - selinux
+
+- name: Instalação de pacotes importantes
+  yum:
+    name: "{{ pkgs_to_install }}"
+    state: present
+  tags: 
+    - packages
+
+#- name: Registro e subscrição do servidor no portal da Red Hat
+#  redhat_subscription:
+#    username: seu_usuario
+#    password: sua_senha
+#    auto_attach: yes
+#  when: not subs.results[0].ansible_facts.subscription_status == "Current"
+#  tags: 
+#    - subscription
+
+- name: Configura o Chrony
+  template:
+    src: templates/chrony.conf.j2
+    dest: /etc/chrony.conf
+  notify: Reinicia o serviço Chrony
+
+- name: Libera o acesso SSH no Firewall
+  firewalld:
+    service: ssh
+    state: enabled
+    immediate: yes
+  tags: 
+    - firewall
+
+- name: Instalação e configuração do Cockpit
+  yum:
+    name: cockpit
+    state: present
+  tags:
+    - cockpit
+
+- name: Habilitar o acesso do firewall ao Cockpit
+  firewalld:
+    service: cockpit
+    state: enabled
+    permanent: true
+    immediate: true
+  tags:
+    - firewall
+
+
+- name: Define valor de swappiness
+  sysctl:
+    name: vm.swappiness
+    value: 1
+    state: present
+    sysctl_set: true
+    reload: true
+
+- name: Desativa o suporte a IPV6
+  sysctl:
+    name: net.ipv6.conf.all.disable_ipv6
+    value: 1
+    state: present
+    sysctl_set: true
+    reload: true
+
+- name: Define o número máximo de processos
+  sysctl:
+    name: kernel.pid_max
+    value: 65536
+    state: present
+    sysctl_set: true
+    reload: true
+
+- name: Criação de diretório para logs de automação
+  file:
+    path: /var/log/ansible
+    state: directory
+    mode: '0755'
+
+- name: Criação do arquivo de log para o hardening
+  template:
+    src: templates/hardening_log.j2
+    dest: /var/log/ansible/hardening.log
+    mode: '0644'
+  tags:
+    - hardening

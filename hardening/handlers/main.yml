@@ -1,0 +1,6 @@
+---
+# handlers file for hardening
+- name: Reinicia o serviço Chrony
+  service:
+    name: chronyd
+    state: restarted

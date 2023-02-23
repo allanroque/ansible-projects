@@ -1,0 +1,12 @@
+# /etc/chrony.conf
+
+# Use the local system clock as a reference
+local stratum 10
+
+# Specify the NTP servers to use
+{% for server in chrony_servers %}
+{{ server }}
+{% endfor %}
+
+# Specify the file containing the drift data
+driftfile {{ chrony_driftfile }}

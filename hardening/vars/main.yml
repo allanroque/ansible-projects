@@ -1,0 +1,33 @@
+---
+# vars file for hardening
+devops_user: devops
+devops_password: redhat*99
+
+services_to_enable:
+  - sshd
+  - firewalld
+  - chronyd
+
+services_to_disable:
+  - cups
+
+pkgs_to_install:
+  - cockpit
+  - bind-utils
+  - net-tools
+  - vim
+  - chrony
+  - wget
+  - sos
+  - yum-utils
+  - sysstat
+
+os_selinux_state: enforcing
+os_selinux_policy: targeted
+
+chrony_servers:
+  - 'server 0.br.pool.ntp.org iburst'
+  - 'server 1.br.pool.ntp.org iburst'
+  - 'server 2.br.pool.ntp.org iburst'
+  - 'server 3.br.pool.ntp.org iburst'
+chrony_driftfile: /var/lib/chrony/drift

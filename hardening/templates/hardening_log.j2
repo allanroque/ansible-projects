@@ -1,0 +1,5 @@
+# Informações do Hardening Playbook - {{ ansible_date_time.date }} {{ ansible_date_time.time }}
+
+{% for host in ansible_play_hosts %}
+Host: {{ host }}
+{% endfor %}

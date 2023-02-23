@@ -1,0 +1,22 @@
+
+*****************************************************************
+
+System Information For Hostname: {{ ansible_hostname }}
+
+- Distribution: {{ ansible_distribution }}
+- Distribution Release: {{ ansible_distribution_release }}
+- Distribution Version: {{ ansible_distribution_version }}
+- DNS Search: {{ ansible_dns.search }}
+- DNS Server(s): {{ ansible_dns.nameservers | join(',') }}
+- ipaddr: {{ ansible_all_ipv4_addresses }}
+- Kernel: {{ ansible_kernel }}
+- Memory Installed: {{ ansible_memtotal_mb }}MB
+- Memory Swapfile: {{ ansible_swaptotal_mb }}MB
+- Processors: {{ ansible_processor_count }}
+- Python Version: {{ ansible_python.version }}
+- Timezone: {{ ansible_date_time.tz }}
+
+ Authorized access only! 
+ If you are not authorized to access or use this system, disconnect now! 
+ ------------------------------------
+*****************************************************************
